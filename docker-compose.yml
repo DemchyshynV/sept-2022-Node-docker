@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+    env_file:
+      - .env
+    volumes:
+      - ./dist:/app
+      - /app/node_modules
+    restart: on-failure
+    command: >
+      sh -c "node app.js"
+
+  db:
+    image: mongo
+    env_file:
+      - .env
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+      - ./mongo_db:/data/db
+    restart: on-failure
+
+  web:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    restart: on-failure
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./client:/usr/share/nginx/html
